@@ -1,12 +1,4 @@
---------------------------------------------------------
--- Archivo creado  - sábado-mayo-09-2015   
---------------------------------------------------------
---------------------------------------------------------
---  DDL for Procedure DISPARAR
---------------------------------------------------------
-set define off;
-
-  CREATE OR REPLACE PROCEDURE "SYSTEM"."DISPARAR" AS 
+CREATE OR REPLACE PROCEDURE "SYSTEM"."DISPARAR" AS 
 
 ancho number := 0;
 largo number := 0;
