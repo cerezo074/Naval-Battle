@@ -18,6 +18,7 @@
 /*Declare variables*/
 
 shipOnPosition number := 0;
+shipNearBy Boolean := false;
 
 BEGIN
   
@@ -25,15 +26,19 @@ BEGIN
   Check the first point of the ship, we need to see if there is a ship on this position,
   it doesn't care if the orientation of the ship if vertical or horizontal for the first position.
   */
-  if ENFILA = 1  or ENCOLUMNA = 1 or ENFILA = LARGO or ENCOLUMNA = ANCHO or ENFILA+2 = LARGO or ANCHO+2 = ENCOLUMNA then
+  if ENFILA = 1  or ENCOLUMNA = 1 or ENFILA = LARGO or ENCOLUMNA = ANCHO or ENFILA+2 = LARGO or ENCOLUMNA+2 = ANCHO then
     return false;
   end if;
   
-  --when we insert the first ship, we have 3 positions for it, after that we setup the position for the second ship
-  --and the variable shipOnPosition is fetching 3 always THERE IS AN ERROR1234 HERE.
   select count(*) into shipOnPosition from BARCOS where FILA = ENFILA and COLUMNA = ENCOLUMNA;
   
   if shipOnPosition != 1  then
+    
+    shipNearBy := BARCO_CERCA(ENFILA,ENCOLUMNA,ANCHO,LARGO);
+    
+    if shipNearBy then 
+      return false;
+    end if;
     
     /*Horizontal*/
     if ENSENTIDO = 1 then
@@ -47,7 +52,6 @@ BEGIN
           return false;
         end if;
         
-        --here is the same sentece with a little change of the ERROR1234 and this works fine
         select count(*) into shipOnPosition from BARCOS where FILA = ENFILA and COLUMNA = (ENCOLUMNA+i);
         
         /*There is a ship on this position*/
@@ -55,7 +59,13 @@ BEGIN
               --DBMS_OUTPUT.PUT_LINE('Posicion ocupada en columna: '||(COLUMNA+i));
               return false;
         end if;
-      
+        
+        shipNearBy := BARCO_CERCA(ENFILA,ENCOLUMNA+i,ANCHO,LARGO);
+    
+        if shipNearBy then 
+          return false;
+        end if;
+          
       end loop;
       
       /*There isn't a ship on this position*/
@@ -79,9 +89,16 @@ BEGIN
                 
         --here is the same sentece with a little change of the ERROR1234 and this works fine
         select count(*) into shipOnPosition from BARCOS where FILA = (ENFILA+i) and COLUMNA = ENCOLUMNA;
+        
         if (shipOnPosition = 1) then
               --DBMS_OUTPUT.PUT_LINE('Posicion ocupada en fila: '||(FILA+i));
               return false;
+        end if;
+      
+        shipNearBy := BARCO_CERCA(ENFILA+i,ENCOLUMNA,ANCHO,LARGO);
+    
+        if shipNearBy then 
+          return false;
         end if;
       
       end loop;
