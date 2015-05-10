@@ -8,8 +8,8 @@ set define off;
 
   CREATE OR REPLACE PROCEDURE "SYSTEM"."DISPARAR" AS 
 
-ancho number := 10;
-largo number := 10;
+ancho number := 4;
+largo number := 6;
 disparos number := 0;
 
 impacto number := 0;
@@ -20,7 +20,7 @@ aleatorioFila Number := 0;
 aleatorioColumna Number := 0;
 resultado Number := 0;
 disparoNoUsado Number := 0;
-usarAleatorio Boolean := true;
+usarAleatorio Boolean := false;
 backTracking Boolean := false;--cuando no podemos movernos o no hay un siguiente movimiento
 huboTiroBueno Boolean := false;
 proximaFila Number := 0;
@@ -28,9 +28,15 @@ proximaColumna Number := 0;
 ultimoTiroBuenoFila Number := 0;
 ultimoTiroBuenoColumna Number := 0;
 
+estrategia Boolean := true;
+validarDesvio Boolean := false;
+marcadorFila Number;
+marcadorColumna Number;
+
 centinela Boolean := false;
 cont Number := 0;
 
+disparosPermitidos Number := 0;
 indiceActualTirosBuenos Number := 0;
 
 --No se usan
@@ -47,15 +53,19 @@ BEGIN
 
     for j in 1..ancho loop 
     
-      insert into PRUEBAPROFE values (i,j,0);
+      insert into PRUEBAPROFE values (j,i,0);
     
     end loop;
 
   end loop;
   
+/*
+  update PRUEBAPROFE set ocupado = 1 where col = 3 and fila = 4;
+  update PRUEBAPROFE set ocupado = 1 where col = 3 and fila = 5;
+  update PRUEBAPROFE set ocupado = 1 where col = 3 and fila = 6;
+  
   update PRUEBAPROFE set ocupado = 1 where col = 1 and fila = 4;
   update PRUEBAPROFE set ocupado = 1 where col = 2 and fila = 4;
-  
   update PRUEBAPROFE set ocupado = 1 where col = 5 and fila = 5;
   update PRUEBAPROFE set ocupado = 1 where col = 6 and fila = 5; 
   update PRUEBAPROFE set ocupado = 1 where col = 7 and fila = 5;
@@ -71,7 +81,7 @@ BEGIN
   update PRUEBAPROFE set ocupado = 1 where col = 8 and fila = 3;
   update PRUEBAPROFE set ocupado = 1 where col = 6 and fila = 3;
   update PRUEBAPROFE set ocupado = 1 where col = 7 and fila = 2;
-  
+ */ 
   --prueba ADAED
   
   --tomamos el ancho y el largo de las configuraciones
@@ -84,44 +94,43 @@ BEGIN
 
     for j in 1..ancho loop 
     
-      insert into MYBOARD values (i,j,'N',0);
+      insert into MYBOARD values (j,i,'N',0);
     
     end loop;
 
   end loop; 
   commit;
+  
   --Leer Disparos
   --SELECT NMDISPAROS into disparos FROM salvarez_bn.VBN1_USUARIOS;
-  disparos := 100;
+  disparos := 15;
+  
+  marcadorFila := 3;
+  marcadorColumna := 1;
+  aleatorioFila := marcadorFila;
+  aleatorioColumna := marcadorColumna;
   
   loop
     
-    --Leer la variable CDESTADO desde y asigarlo a juego iniciado
+    --Leer la variable CDESTADO y asigarlo a juego iniciado
     --SELECT CDESTADO into juegoIniciado FROM into salvarez_bn.VBN1_PARAMETROS;
     juegoIniciado := 1;
     
     DBMS_OUTPUT.PUT_LINE('Intentando disparar');
     
     if juegoIniciado = 1 then
-      
-      --disparamos en las 3 primeras posiciones
-      update MYBOARD set resultado = 'X' where fila = 1 and columna = 1;
-      update MYBOARD set resultado = 'X' where fila = 1 and columna = 2;
-      update MYBOARD set resultado = 'X' where fila = 1 and columna = 3;
-      commit;
-      
-       disparos := disparos - 3;
-       
+    
       --SELECT NMDISPAROS into disparos FROM salvarez_bn.VBN1_USUARIOS;
       
       --Iniciamos la estrategia de aleatorio
       while disparos > 0 loop
         
         --SELECT NMDISPAROS into disparos FROM salvarez_bn.VBN1_USUARIOS;
-        
-        if usarAleatorio then
-          aleatorioFila := RANDOMINRANGE(1,largo);
-          aleatorioColumna := RANDOMINRANGE(1,ancho);
+        if not(estrategia) then
+          if usarAleatorio then
+            aleatorioFila := RANDOMINRANGE(1,largo);
+            aleatorioColumna := RANDOMINRANGE(1,ancho);
+          end if;
         end if;
 
         select count (*) into disparoNoUsado from MYBOARD where columna = aleatorioColumna and fila = aleatorioFila and RESULTADO = 'N';
@@ -155,7 +164,9 @@ BEGIN
               
               if indiceActualTirosBuenos = 1 then
                 backTracking := false;
-                usarAleatorio := true;
+                if not(estrategia) then
+                  usarAleatorio := true;
+                end if;
               else
                 
                 --bucle para llegar a un indice bueno que se pueda mover BUCLE
@@ -175,7 +186,9 @@ BEGIN
                   
                   if proximaFila = 0 and proximaColumna = 0 then
                    backTracking := false;
-                   usarAleatorio := true;
+                   if not(estrategia) then
+                    usarAleatorio := true;
+                   end if;
                   else
                    backTracking := true;
                    usarAleatorio := false;
@@ -192,7 +205,9 @@ BEGIN
                 else
                 
                  backTracking := false;
-                 usarAleatorio := true;
+                 if not(estrategia) then
+                  usarAleatorio := true;
+                 end if;
                 
                 end if;--valida si no esta en el primer tiro
                 
@@ -228,7 +243,9 @@ BEGIN
                 
                 if proximaFila = 0 and proximaColumna = 0 then
                  backTracking := false;
-                 usarAleatorio := true;
+                 if not(estrategia) then
+                  usarAleatorio := true;
+                 end if;
                 else
                  backTracking := true;
                  usarAleatorio := false;
@@ -245,7 +262,9 @@ BEGIN
               else
               
                backTracking := false;
-               usarAleatorio := true;
+               if not(estrategia) then
+                usarAleatorio := true;
+               end if;
               
               end if;--valida si no esta en el primer tiro
                 
@@ -253,7 +272,9 @@ BEGIN
                            
             else--no veniamos haciendo backtracking
                backTracking := false;
-               usarAleatorio := true; 
+               if not(estrategia) then
+                usarAleatorio := true;
+               end if; 
             end if;--evalua si venimos de un tiro bueno
             
           end if;--evaluacion disparo
@@ -266,6 +287,68 @@ BEGIN
           
         end if;--disparo usado        
         
+        if not(backTracking) then 
+        
+          if estrategia then
+            
+            marcadorFila := marcadorFila - 1;
+            marcadorColumna := marcadorColumna + 1;
+            aleatorioFila := marcadorFila;
+            aleatorioColumna := marcadorColumna;
+          
+          end if;
+          
+          if estrategia then
+          
+            validarDesvio := false;
+          
+            if marcadorFila < 1 or marcadorColumna > ancho then
+          
+              marcadorFila := marcadorFila + 4;
+              marcadorColumna := marcadorColumna - 1;
+              aleatorioFila := marcadorFila;
+              aleatorioColumna := marcadorColumna;
+              validarDesvio := true;
+          
+            end if;
+          
+          end if;
+          
+          if estrategia then
+          
+            if marcadorFila > largo or marcadorColumna > ancho then
+          
+              estrategia := false;
+              usarAleatorio := true;
+              aleatorioFila := 0;
+              aleatorioColumna := 0;
+          
+            else
+            
+                if validarDesvio then
+                  
+                  while marcadorFila < largo and marcadorColumna > 1 loop --hacemos un desvio en diagonal (izq,abajo) hasta que llegue a la ultima fila
+          
+                    marcadorFila := marcadorFila + 1;
+                    marcadorColumna := marcadorColumna - 1;
+          
+                  end loop;
+                  
+                  aleatorioFila := marcadorFila;
+                  aleatorioColumna := marcadorColumna;
+                  validarDesvio := false;
+                  
+                end if;
+                
+            end if;
+          
+          end if;
+        
+        end if;
+        
+        select count(*) into disparosPermitidos from MYBOARD where RESULTADO = 'N';
+        exit when disparosPermitidos <= 0;
+        
       end loop;--while
       
     end if;--validacion de juego iniciado
@@ -275,9 +358,11 @@ BEGIN
   end loop;--bucle para esperar que el juego incio
   
   commit; 
+  
   DBMS_OUTPUT.PUT_LINE('Disparos terminados');
   PRINTMYBOARD();
   IMPRIMEPROFESOR();
+  
 END DISPARAR;
 
 /
