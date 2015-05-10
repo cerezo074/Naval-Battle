@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- Archivo creado  - sábado-mayo-09-2015   
+-- Archivo creado  - domingo-mayo-10-2015   
 --------------------------------------------------------
 --------------------------------------------------------
 --  DDL for Procedure UBICAR_BARCOS
@@ -7,15 +7,6 @@
 set define off;
 
   CREATE OR REPLACE PROCEDURE "SYSTEM"."UBICAR_BARCOS" as
-
-  type Ship is record (
-    shipId Number,
-    shipRow Number,
-    shipColumn Number,
-    shipOrientation Number
-  );
-  
-  type ShipsSorted is table of Ship index by binary_integer;  
 
   /*Declare variables*/
   
@@ -26,28 +17,27 @@ set define off;
   fila Number := 0;
   columna Number := 0;
   sentido Number := 0;
+  barcoCreado Boolean := false;
   
   centinel boolean := false;
   totalShips Number := 0;
   cont Number := 1;
-  aleatorioFila SHIPS.FILA%TYPE := 0;
-  aleatorioColumna SHIPS.COLUMNA%TYPE := 0;
-  aleatorioSentido SHIPS.SENTIDO%TYPE := 0;
-  barco Ship;
-  lista ShipsSorted;
+  aleatorioFila BARCOS.FILA%TYPE := 0;
+  aleatorioColumna BARCOS.COLUMNA%TYPE := 0;
+  aleatorioSentido BARCOS.SENTIDO%TYPE := 0;
   
   /*Declare Cursors*/
   --cursor idShips is select NMPLACA_BARCO from vbn1_barcos;
 
 begin
 
-  delete from SHIPS;
-  
+  delete from BARCOS;
+  commit;
   --open idShips;
   
   for i in 1..6 loop
     
-    /*iterate on all ships for late set up a point on map*/
+    /*iterate on all ships for late setup a point on board*/
     --fetch idShips into idShip;
     --exit when idShips%notfound;
     
@@ -60,18 +50,28 @@ begin
       aleatorioSentido := RANDOMINRANGE(0,1);
       --DBMS_OUTPUT.PUT_LINE(chr(10)||'aFila: '||aleatorioFila||chr(10)||'aCol: '||aleatorioColumna||chr(10)||'Sentido: '||aleatorioSentido||chr(10));
       
-      if CREAR_BARCO_POSICION(aleatorioFila,aleatorioColumna,aleatorioSentido,ancho,largo) and (aleatorioFila != 1 and aleatorioFila != largo) and (aleatorioColumna != 1 and aleatorioColumna != ancho) then
-        
-        barco.shipId := i;
-        barco.shipRow := aleatorioFila;
-        barco.shipColumn := aleatorioColumna;
-        barco.shipOrientation := aleatorioSentido;
-        lista(cont) := barco;
-        --DBMS_OUTPUT.PUT_LINE('Posicion libre: '||i);
-        centinel := false;
-        cont := cont + 1;
+      barcoCreado := CREAR_BARCO_POSICION(i,aleatorioFila, aleatorioColumna, aleatorioSentido, ancho, largo);
       
-        --DBMS_OUTPUT.PUT_LINE('Posicion ocupada');
+      if barcoCreado then
+      /*(aleatorioFila != 1 and aleatorioFila != largo) and (aleatorioColumna != 1 and aleatorioColumna != ancho) and*/    
+        --DBMS_OUTPUT.PUT_LINE('Ship: '||i);
+        --DBMS_OUTPUT.PUT_LINE('row: '||aleatorioFila);
+        --DBMS_OUTPUT.PUT_LINE('column: '||aleatorioColumna);
+        --DBMS_OUTPUT.PUT_LINE('orientation: '||aleatorioSentido||chr(10));
+        
+        if aleatorioSentido = 1 then
+          update pruebaprofe set ocupado = 1 where col = aleatorioColumna and fila = aleatorioFila;
+          update pruebaprofe set ocupado = 1 where col = aleatorioColumna+1 and fila = aleatorioFila;
+          update pruebaprofe set ocupado = 1 where col = aleatorioColumna+2 and fila = aleatorioFila;
+          commit;
+        else
+          update pruebaprofe set ocupado = 1 where col = aleatorioColumna and fila = aleatorioFila;
+          update pruebaprofe set ocupado = 1 where col = aleatorioColumna and fila = aleatorioFila+1;
+          update pruebaprofe set ocupado = 1 where col = aleatorioColumna and fila = aleatorioFila+2;
+          commit;
+        end if;
+        
+        centinel := false;
       
       end if;
             
@@ -82,36 +82,6 @@ begin
   --close idShips;
   
   --DBMS_OUTPUT.PUT_LINE('Cursor Cerrado');
-  
-  --select count(*) into totalShips from vbn1_barcos;
-  
-  if true then
-      
-    for i in 1..6 loop
-   
-      --DBMS_OUTPUT.PUT_LINE(chr(10)||'#SHIP#');
-      barco := lista(i);
-      --DBMS_OUTPUT.PUT_LINE('Ship: '||barco.shipId);
-      --DBMS_OUTPUT.PUT_LINE('row: '||barco.shipRow);
-      --DBMS_OUTPUT.PUT_LINE('column: '||barco.shipColumn);
-      --DBMS_OUTPUT.PUT_LINE('orientation: '||barco.shipOrientation||chr(10));
-      insert into SHIPS values(barco.shipColumn,barco.shipRow,barco.shipId,barco.shipOrientation);
-      
-      if barco.shipOrientation = 1 then
-        update pruebaprofe set ocupado = 1 where col = barco.shipColumn and fila = barco.shipRow;
-        update pruebaprofe set ocupado = 1 where col = barco.shipColumn+1 and fila = barco.shipRow;
-        update pruebaprofe set ocupado = 1 where col = barco.shipColumn+2 and fila = barco.shipRow;
-      else
-        update pruebaprofe set ocupado = 1 where col = barco.shipColumn and fila = barco.shipRow;
-        update pruebaprofe set ocupado = 1 where col = barco.shipColumn and fila = barco.shipRow+1;
-        update pruebaprofe set ocupado = 1 where col = barco.shipColumn and fila = barco.shipRow+2;
-      end if;
-      
-    end loop;
-    
-    commit;
-    
-  end if;
   
 end;
 

@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- Archivo creado  - sábado-mayo-09-2015   
+-- Archivo creado  - domingo-mayo-10-2015   
 --------------------------------------------------------
 --------------------------------------------------------
 --  DDL for Procedure MOVIMIENTO
@@ -8,8 +8,8 @@ set define off;
 
   CREATE OR REPLACE PROCEDURE "SYSTEM"."MOVIMIENTO" 
 (
-  FILA IN NUMBER 
-, COLUMNA IN NUMBER 
+  ENFILA IN NUMBER 
+, ENCOLUMNA IN NUMBER 
 , ANCHO IN NUMBER 
 , LARGO IN NUMBER
 , PROXIMAFILA OUT NUMBER
@@ -26,15 +26,13 @@ BEGIN
   
   -- rigth
   
-  if ((COLUMNA + 1) <= ANCHO)  then
+  if enter = false and ((ENCOLUMNA + 1) <= ANCHO)  then
   
-    select count(*) into shootNoExist 
-    from MYBOARD 
-    where FILA = FILA and COLUMNA = (COLUMNA+1) and RESULTADO = 'N';
+    select count(*) into shootNoExist from MYBOARD where FILA = ENFILA and COLUMNA = (ENCOLUMNA+1) and RESULTADO = 'N';
     
-    if shootNoExist = 0 then
-      PROXIMAFILA := FILA;
-      PROXIMACOLUMNA := COLUMNA+1;
+    if shootNoExist = 1 then
+      PROXIMAFILA := ENFILA;
+      PROXIMACOLUMNA := ENCOLUMNA+1;
       enter := true;
     end if;
   
@@ -42,15 +40,13 @@ BEGIN
   
   -- down
   
-  if ((FILA + 1) <= LARGO)  then
+  if enter = false and ((ENFILA + 1) <= LARGO)  then
   
-    select count(*) into shootNoExist 
-    from MYBOARD 
-    where FILA = (FILA+1) and COLUMNA = COLUMNA and RESULTADO = 'N';
+    select count(*) into shootNoExist from MYBOARD where FILA = (ENFILA+1) and COLUMNA = ENCOLUMNA and RESULTADO = 'N';
     
-    if shootNoExist = 0 then
-      PROXIMAFILA := FILA+1;
-      PROXIMACOLUMNA := COLUMNA;
+    if shootNoExist = 1 then
+      PROXIMAFILA := ENFILA+1;
+      PROXIMACOLUMNA := ENCOLUMNA;
       enter := true;
     end if;
   
@@ -58,15 +54,13 @@ BEGIN
   
   -- up
   
-  if ((FILA - 1) >= 1)  then
+  if enter = false and ((ENFILA - 1) >= 1)  then
   
-    select count(*) into shootNoExist 
-    from MYBOARD 
-    where FILA = (FILA - 1) and COLUMNA = COLUMNA and RESULTADO = 'N';
+    select count(*) into shootNoExist from MYBOARD where FILA = (ENFILA - 1) and COLUMNA = ENCOLUMNA and RESULTADO = 'N';
     
-    if shootNoExist = 0 then
-      PROXIMAFILA := FILA-1;
-      PROXIMACOLUMNA := COLUMNA;
+    if shootNoExist = 1 then
+      PROXIMAFILA := ENFILA-1;
+      PROXIMACOLUMNA := ENCOLUMNA;
       enter := true;
     end if;
   
@@ -74,15 +68,13 @@ BEGIN
   
   -- left
   
-  if ((COLUMNA - 1) >= 1)  then
+  if enter = false and ((ENCOLUMNA - 1) >= 1)  then
   
-    select count(*) into shootNoExist 
-    from MYBOARD 
-    where FILA = FILA and COLUMNA = (COLUMNA-1) and RESULTADO = 'N';
+    select count(*) into shootNoExist from MYBOARD where FILA = ENFILA and COLUMNA = (ENCOLUMNA-1) and RESULTADO = 'N';
     
-    if shootNoExist = 0 then
-      PROXIMAFILA := FILA;
-      PROXIMACOLUMNA := (COLUMNA-1);
+    if shootNoExist = 1 then
+      PROXIMAFILA := ENFILA;
+      PROXIMACOLUMNA := (ENCOLUMNA-1);
       enter := true;
     end if;
   
